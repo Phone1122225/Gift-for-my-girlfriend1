@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Gifts for You ❤️</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff6b8f;
+            --secondary-color: #ffccd5;
+            --text-color: #444;
+            --glass-bg: rgba(255, 255, 255, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --shadow-light: rgba(255, 107, 143, 0.2);
+            --shadow-medium: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 50px;
+        }
+
+        /* --- ระบบรหัสผ่าน --- */
+        #password-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .password-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            box-shadow: 0 15px 35px var(--shadow-medium);
+        }
+        .password-box input {
+            padding: 12px;
+            border-radius: 15px;
+            border: 1px solid var(--primary-color);
+            outline: none;
+            text-align: center;
+            font-size: 1.2rem;
+            width: 80%;
+            margin-bottom: 20px;
+        }
+        .password-box button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Kanit';
+            font-size: 1rem;
+        }
+
+        /* --- ซ่อนเนื้อหาหลักจนกว่าจะผ่านรหัส --- */
+        #main-content {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* --- แก้ไข CSS Modal ให้ซ่อนก่อนเสมอ --- */
+        .modal {
+            display: none; /* ซ่อนเป็นค่าเริ่มต้น */
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .main-header {
+            margin: 40px 0 20px 0;
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 5px var(--shadow-light);
+            animation: heartbeat 1.5s infinite;
+        }
+
+        .main-message {
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            padding: 15px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--shadow-medium);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 700px;
+            width: 90%;
+            margin-bottom: 30px;
+        }
+
+        .gift-btn {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 25px 15px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px var(--shadow-medium);
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 600;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-align: center;
+        }
+        .gift-btn:hover {
+            transform: translateY(-8px) scale(1.03);
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 15px 35px var(--shadow-light);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+        .gift-btn span { font-size: 2.5rem; color: var(--primary-color); transition: color 0.3s ease; }
+        .gift-btn:hover span { color: white; }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 15px 40px var(--shadow-medium);
+            text-align: center;
+            overflow-y: auto;
+            max-height: 90vh;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 30px; cursor: pointer; color: #aaa; }
+        .close-btn:hover { color: var(--primary-color); }
+
+        .modal-1-content img { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 5px solid white; margin-bottom: 20px; }
+        .highlight-number { font-size: 3rem; font-weight: 800; color: var(--primary-color); display: block; margin: 10px 0; }
+        .letter-text { font-size: 1.1rem; line-height: 1.8; text-align: left; background: rgba(255,255,255,0.7); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .favorite-item { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: rgba(255,255,255,0.7); padding: 15px; border-radius: 15px; text-align: left; }
+        .favorite-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; }
+
+        .confetti-btn {
+            background: var(--primary-color);
+            color: white; border: none; padding: 12px 25px; border-radius: 50px;
+            font-size: 1rem; cursor: pointer; box-shadow: 0 8px 20px var(--shadow-light); margin-top: 30px;
+        }
+
+        .music-control {
+            position: fixed; bottom: 20px; right: 20px;
+            background: white; width: 55px; height: 55px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001;
+            font-size: 1.5rem; color: var(--primary-color);
+        }
+
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .floating-element { position: fixed; pointer-events: none; z-index: 0; animation: float 5s linear infinite; }
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+            
+        }
+        /* จัดระเบียบรูปภาพในอัลบั้ม */
+.photo-album-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* แบ่งเป็น 2 คอลัมน์ */
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.photo-album-grid img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover; /* บังคับให้รูปเต็มกรอบโดยไม่เบี้ยว */
+    border-radius: 15px;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.photo-album-grid img:hover {
+    transform: scale(1.05); /* รูปขยายเมื่อเอาเมาส์วาง */
+}
+
+/* ปรับให้แสดง 1 คอลัมน์บนมือถือที่จอเล็กมากๆ */
+@media (max-width: 400px) {
+    .photo-album-grid { grid-template-columns: 1fr; }
+}
+    </style>
+</head>
+<body>
+
+    <div id="password-screen">
+        <div class="password-box">
+            <h2 style="color: var(--primary-color);">Enter Password ❤️</h2>
+            <p>กรุณาใส่รหัสผ่านเพื่อดูของขวัญ</p>
+            <input type="password" id="passInput" placeholder="รหัสผ่านคือ 1234">
+            <br>
+            <button onclick="checkPassword()">ตกลง</button>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <h1 class="main-header">Special Gifts for You! 💖</h1>
+        <p class="main-message">กดปุ่มด้านล่างเพื่อเปิดกล่องของขวัญแต่ละใบนะคั้บบบ</p><div id="modal_album" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close-btn" onclick="closeModal('modal_album')">&times;</span>
+        <h2 style="color: var(--primary-color);">Our Memories 📸</h2>
+        <p>รวมรูปภาพความทรงจำของเค้ากับเธอออ</p>
+        <div class="photo-album-grid">
+            <img src="https://i.ibb.co/9HBg1DwM/LINE-ALBUM-260101-1.jpg">
+            <img src="https://i.ibb.co/s9CXsMvJ/LINE-ALBUM-260101-4.jpg">
+            <img src="https://i.ibb.co/8gb1k1Kk/LINE-ALBUM-260101-7.jpg">
+            <img src="https://i.ibb.co/N2S0rs5r/LINE-ALBUM-260101-21.jpg">
+            <img src="https://i.ibb.co/NnnRz0XY/LINE-ALBUM-260101-25.jpg">
+        </div>
+    </div>
+</div>
+
+        <div class="menu-grid">
+            <button class="gift-btn" onclick="openModal('modal1')"><span>🎁</span>Our Journey</button>
+            <button class="gift-btn" onclick="openModal('modal2')"><span>💌</span>My Dear Letter</button>
+            <button class="gift-btn" onclick="openModal('modal3')"><span>💐</span>Flowers & Words</button>
+            <button class="gift-btn" onclick="openModal('modal4')"><span>💖</span>Her Favorites</button>
+            <button class="gift-btn" onclick="openModal('modal_album')"><span>📸</span>Our Memories</button>
+        </div>
+
+        <button class="confetti-btn" onclick="triggerConfetti()">ฟรุ้งฟริ้งๆๆ🥳</button>
+
+        <div class="music-control" onclick="toggleMusic()">🎵
+            <audio id="bgMusic" loop>
+                <source src="https://cdn.pixabay.com/download/audio/2025/12/31/audio_8b5a312752.mp3?filename=romantic-love-romantics-music-459475.mp3" type="audio/mpeg">
+            </audio>
+        </div>
+    </div>
+
+    <div id="modal1" class="modal">
+        <div class="modal-content modal-1-content">
+            <span class="close-btn" onclick="closeModal('modal1')">&times;</span>
+            <h2>Our Journey 🥰</h2>
+            <img src="" alt="Couple Photo"> 
+            <p>เราคบกันมาแล้ว</p>
+            <span id="days-together" class="highlight-number">0</span>
+            <p>วัน</p>
+            <p style="margin-top: 20px;">วันครบรอบของเราคือ:</p>
+            <div id="anniversary-date" class="highlight-number" style="font-size: 1.8rem;"></div>
+        </div>
+    </div>
+
+    <div id="modal2" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modal2')">&times;</span>
+            <h2>My Dear Letter 📝</h2>
+            <div class="letter-text" id="typewriter-content"></div>
+            <p style="font-style: italic; font-weight: 600; color: var(--primary-color);">- From Your Loving Fan -</p>
+        </div>
+    </div>
+
+    <div id="modal3" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modal3')">&times;</span>
+            <h2>ดอกไม้แทนใจ 💐</h2>
+            <img id="flower-img" src="" style="max-width:80%; border-radius:15px; margin-bottom:20px;">
+            <p>ดอกทานตะวันนี้เธอบอกว่าเธอชอบมากๆเลยยย เธอบอกเสมอว่าเธออยากได้ แต่เค้าก็ไม่ได้ให้เธอซักที งั้นเค้าขอมาให้ในนี้แทนละกันนะคั้บบบ แหะๆ</p>
+        </div>
+    </div>
+
+    <div id="modal4" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modal4')">&times;</span>
+            <h2>สิ่งที่เธอชอบ 💖</h2>
+            <div class="favorite-item">
+                <img src="https://i.ibb.co/Zr2HrLC/1.jpg"> <div><h3>ชานมสุดโปรดของเธออ🧋</h3><p>เธอชอบกินโกโก้ปั่นใส่มุกร้านคุณนายยย เวลาเธองอนเค้ามักจะง้อเธอด้วยชานมแล้วเธอก็จะหายโกรธตลอดเลยยยย😹</p></div>
+            </div>
+            <div class="favorite-item">
+                <img src="https://i.ibb.co/bMp7d3DY/kitten-british-cat-pet-cute-preview.jpg"> <div><h3>น้องแมวเหมียว 🐱</h3><p>ถึงเธอจะแพ้แมวแต่เวลาเธอเห็นแมวทีไรเธอมักจะเข้าไปเล่นกับมันบ่อยๆห้ามเท่าไหร่ก็ไม่ฟังซักที~ ดื้อมากกกก</p></div>
+            </div>
+            <div class="favorite-item">
+                <img src="https://i.ibb.co/5hpV3q68/noodles-with-pork-pork-balls-chilli-paste-with-soup-thai-style-vegetable-boat-noodles-selective-focu.jpg"> <div><h3>เมนูเส้นนน🍜</h3><p>เธอชอบกินเมนูเส้นมากกกกก โดยเฉพาพก๋วยเตี๋ยวววเธอกินได้ทุกวันเลยยยย แต่จะชอบสั่งแบบหมูตุ๋นนไม่ใส่เทียมเจียวว</p></div>
+            </div>      
+            <div claass="favorite-item">
+                <img src="https://i.ibb.co/LhY3SwCC/j1-1.jpg"> <div><h3>เมนูข้าววว🍚</h3><p>ในเมนูข้าวเธอน่าจะชอบสามชั้นผัดพริกแกง แล้วก็ส้มตำาา เอิ่มๆๆๆ กระเพราด้วยมั้ยนะะ แล้วเธอก็ชอบกินหมูเด้งงงด้วยยย เธอจะโกรธด้วยมั้ยเนี่ยยย ขอโทษน่าาาา🥺</p></div>
+            </div>
+            <div class="favorite-item">
+                <img src="https://i.ibb.co/7xf6t6YP/sara-cervera-we4l7ch6iwc-unsplash.jpg"> <div><h3>ขนมมม🍫</h3><p>ขนมเธอชอบกินช็อกโกแลตตตต เค้กก็ช็อกโกแลตตตแล้วก็นมสดมะพร้าวววว</p></div>
+            </div>
+        </div>
+    <script>
+        // --- ตั้งค่ารหัสผ่านและข้อมูล ---
+        const CORRECT_PASSWORD = "1234"; // เปลี่ยนรหัสผ่านตรงนี้
+        const togetherStartDate = new Date(2025, 9, 26); 
+        const mainCoupleImgUrl = "https://i.ibb.co/9HBg1DwM/LINE-ALBUM-260101-1.jpg";
+        const flowerImgUrl = "https://i.ibb.co/C3zrKg2S/aaron-burden-2-Izo-IHBg-YAo-unsplash.jpg";
+        const letterTextContent = `ถึงแฟนของเค้า,<br><br>ขอบคุณเธอที่คอยอยู่ข้างๆเค้าตลอดมา<br><br>จนถึงตอนนี้เราก็คบกันมาได้3เดือนละน่าาา<br><br>
+        ดีใจมั้ยยย เค้าดีใจมากๆเลยยย เค้ารักเธอทีสู้ดดดในโลกกเล้ยย<br><br>ที่ผ่านมาเค้าทำเธอเสียใจตั้งหลายรอบเค้าขอโทษมากๆเลยน่าา<br><br>เค้าสัญญาเลยว่าเค้าจะพยายามทำตัวให้ดีขึ้นกว่าเดิมม<br><br>เธออยุ่กับเค้าแบบนี้ไปนานๆเลยน่าาาา
+        <br><br>นี่เป็นของขวัญชิ้นแรกที่เค้าตั้งใจทำให้เธอตลอดเวลา3เดือนที่คบกันมา ที่ผ่านมาเค้าไม่มีอะไรให้เธอเลยเค้าขอโทษมากๆนะคั้บบบ<br><br>สุดท้ายสิ่่งที่เค้าอยากจะบอกเธอก็คืออออ~<br><br>เค้ารักเธอนะคั้บบบบ🥰❤️.`;
+
+        // แก้ไขฟังก์ชัน checkPassword เดิมให้เป็นแบบนี้
+        function checkPassword() {
+            const input = document.getElementById('passInput').value;
+            const music = document.getElementById('bgMusic'); // ดึงค่าตัวเล่นเพลงออกมา
+
+            if (input === CORRECT_PASSWORD) {
+                document.getElementById('password-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'flex';
+        
+                // --- ส่วนที่เพิ่มเข้ามาเพื่อให้เพลงเล่นอัตโนมัติ ---
+                if (music) {
+                    music.play().catch(function(error) {
+                        console.log("การเล่นเพลงอัตโนมัติถูกขัดขวางโดยเบราว์เซอร์:", error);
+                    });
+                }
+                // -------------------------------------------
+
+                triggerConfetti();
+            } else {
+                alert("รหัสผ่านไม่ถูกต้องนะคั้บ ลองใหม่อีกทีนะ!");
+            }
+        }
+
+        // ระบบ Modal
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.style.display = "flex";
+            if(id === 'modal1') updateJourney();
+            if(id === 'modal2') startTypewriter();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = "none";
+            }
+        };
+
+        function updateJourney() {
+            const now = new Date();
+            const diff = Math.floor(Math.abs(now - togetherStartDate) / (1000 * 60 * 60 * 24));
+            document.getElementById('days-together').innerText = diff;
+            const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            document.getElementById('anniversary-date').innerText = `${togetherStartDate.getDate()} ${thaiMonths[togetherStartDate.getMonth()]} ${togetherStartDate.getFullYear() + 543}`;
+            document.querySelector('.modal-1-content img').src = mainCoupleImgUrl;
+        }
+
+        let i = 0;
+        function startTypewriter() {
+            const ele = document.getElementById("typewriter-content");
+            if (i === 0) ele.innerHTML = "";
+            if (i < letterTextContent.length) {
+                if(letterTextContent.charAt(i) === '<') {
+                    ele.innerHTML += "<br>"; i += 4;
+                } else {
+                    ele.innerHTML += letterTextContent.charAt(i); i++;
+                }
+                setTimeout(startTypewriter, 50);
+            }
+        }
+
+        function triggerConfetti() {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function toggleMusic() {
+            const m = document.getElementById("bgMusic");
+            if (m.paused) { m.play(); } else { m.pause(); }
+        }
+
+        // หัวใจลอย
+        setInterval(() => {
+            const e = document.createElement('div');
+            e.classList.add('floating-element');
+            e.innerHTML = '❤️';
+            e.style.left = Math.random() * 100 + 'vw';
+            e.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            document.body.appendChild(e);
+            setTimeout(() => e.remove(), 5000);
+        }, 600);
+
+        document.getElementById('flower-img').src = flowerImgUrl;
+    </script>
+</body>
+</html>
